@@ -1,2 +1,4 @@
 fastapi
 uvicorn
+black == 23.3.0
+pydantic
