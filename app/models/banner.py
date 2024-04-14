@@ -1,10 +1,8 @@
 import inspect
 from datetime import datetime
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
-from pydantic import BaseModel
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 
 class BannerBase(BaseModel):
@@ -14,7 +12,7 @@ class BannerBase(BaseModel):
     )
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserBannerGetResponse(BannerBase):
@@ -25,7 +23,7 @@ class BannerPostResponse(BaseModel):
     banner_id: int = Field(description="Идентификатор созданного баннера")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class BannerPostRequest(BannerBase):

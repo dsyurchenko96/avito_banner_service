@@ -6,11 +6,14 @@ SERVER=avito-server-1
 run:
 	uvicorn app.main:app --reload
 
-view_db:
+view_db: up
 	docker exec -it $(DB) psql -d avito_db -U postgres
 
-create_db:
-	docker exec -it $(SERVER) python app/db/create_db.py
+create_db: up
+	docker exec -it $(SERVER) python app/db/database.py
+
+populate: create_db
+	docker exec -it $(SERVER) python app/db/populate_db.py
 
 up:
 	docker-compose up -d
