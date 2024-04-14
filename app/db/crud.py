@@ -2,7 +2,12 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.models.banner import UserBannerGetResponse
+from app.models.banner import (
+    AdminBannerGetResponse,
+    BannerPostRequest,
+    BannerPostResponse,
+    UserBannerGetResponse,
+)
 from app.models.tables import Banner, Feature, Tag, User
 
 
@@ -25,37 +30,24 @@ def get_banners(
     feature_id: Optional[int] = None,
     tag_id: Optional[int] = None,
     skip: Optional[int] = 0,
-    limit: Optional[int] = 0,
+    limit: Optional[int] = 1000,
 ):
     query = db.query(Banner)
     if feature_id is not None:
         query = query.filter(Banner.feature_id == feature_id)
     if tag_id is not None:
         query = query.filter(Banner.associated_tags.any(Tag.id == tag_id))
-    if query is None:
+    results = query.offset(skip).limit(limit).all()
+
+    if not results:
         return None
-    return [
-        UserBannerGetResponse.from_orm(response)
-        for response in query.offset(skip).limit(limit).all()
-    ]
+
+    return [AdminBannerGetResponse.from_orm(banner) for banner in results]
 
 
-# def create_user(db: Session, user: schemas.UserCreate):
-#     fake_hashed_password = user.password + "notreallyhashed"
-#     db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
-#     db.add(db_user)
-#     db.commit()
-#     db.refresh(db_user)
-#     return db_user
-#
-#
-# def get_items(db: Session, skip: int = 0, limit: int = 100):
-#     return db.query(models.Item).offset(skip).limit(limit).all()
-#
-#
-# def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-#     db_item = models.Item(**item.dict(), owner_id=user_id)
-#     db.add(db_item)
-#     db.commit()
-#     db.refresh(db_item)
-#     return db_item
+def create_banner(db: Session, banner: BannerPostRequest):
+    db_banner = Banner(**banner.dict())
+    db.add(db_banner)
+    db.commit()
+    db.refresh(db_banner)
+    return BannerPostResponse.from_orm(db_banner)

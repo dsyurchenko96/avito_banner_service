@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-black == 23.3.0
 pydantic
 sqlalchemy
 psycopg2-binary

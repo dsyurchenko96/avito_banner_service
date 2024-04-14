@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db.crud import get_banner
 from app.db.database import get_db
 from app.models.banner import UserBannerGetResponse
-from app.utils.auth import is_user
+from app.utils.auth import is_admin, is_user
 
 router = APIRouter(
     responses={
@@ -35,7 +35,7 @@ async def get_user_banner(
     """
     Получение баннера для пользователя на основе тэга и фичи
     """
-    if not is_user(token):
+    if not is_user(token) and not is_admin(token):
         raise HTTPException(status_code=403, detail="Пользователь не имеет доступа")
     banner = get_banner(db, tag_id, feature_id)
     if banner is None:
