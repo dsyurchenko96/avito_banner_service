@@ -7,26 +7,6 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-def optional(*fields):
-    """Decorator function used to modify a pydantic model's fields to all be optional.
-    Alternatively, you can also pass the field names that should be made optional as arguments
-    to the decorator.
-    Taken from https://github.com/samuelcolvin/pydantic/issues/1223#issuecomment-775363074
-    """
-
-    def dec(_cls):
-        for field in fields:
-            _cls.__fields__[field].required = False
-        return _cls
-
-    if fields and inspect.isclass(fields[0]) and issubclass(fields[0], BaseModel):
-        cls = fields[0]
-        fields = cls.__fields__
-        return dec(cls)
-
-    return dec
-
-
 class BannerBase(BaseModel):
     content: dict = Field(
         description="Содержимое баннера",
@@ -60,6 +40,7 @@ class AdminBannerGetResponse(BannerPostRequest):
     updated_at: datetime = Field(description="Дата обновления баннера")
 
 
-@optional
-class BannerPatchRequest(BannerPostRequest):
-    pass
+class BannerPatchRequest(BannerBase):
+    tag_ids: Optional[List[int]] = Field(description="Идентификаторы тэгов")
+    feature_id: Optional[int] = Field(description="Идентификатор фичи")
+    is_active: Optional[bool] = Field(description="Флаг активности баннера")
