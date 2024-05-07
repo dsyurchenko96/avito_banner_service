@@ -21,7 +21,10 @@ class Banner(Base):
     )
 
     associated_tags = relationship(
-        "Tag", secondary="banner_tags", back_populates="associated_banners"
+        "Tag",
+        secondary="banner_tags",
+        back_populates="associated_banners",
+        cascade="all, delete",
     )
 
 
@@ -32,7 +35,10 @@ class Tag(Base):
     description = Column(String(255), nullable=False, default="some tag")
 
     associated_banners = relationship(
-        "Banner", secondary="banner_tags", back_populates="associated_tags"
+        "Banner",
+        secondary="banner_tags",
+        back_populates="associated_tags",
+        passive_deletes=True,
     )
 
 

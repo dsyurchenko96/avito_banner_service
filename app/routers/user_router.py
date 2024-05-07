@@ -31,7 +31,7 @@ async def get_user_banner(
     token: str,
     db: Session = Depends(get_db),
     use_last_revision: Optional[bool] = False,
-) -> UserBannerGetResponse:
+):
     """
     Получение баннера для пользователя на основе тэга и фичи
     """
