@@ -21,7 +21,7 @@ def get_banner(db: Session, feature_id: int, tag_id: int):
         )
         .first()
     )
-    if response is None:
+    if response is None or not response.is_active:
         return None
     return UserBannerGetResponse.from_orm(response)
 

@@ -14,13 +14,8 @@ down:
 view_db: up
 	docker exec -it $(DB) psql -d avito_db -U postgres
 
-db_clean: up
-	docker exec -it $(DB) psql -d avito_db -U postgres -c "DROP TABLE IF EXISTS banners, features, tags, banner_tags, users, admins;"
-
-db_rebuild:
-	make db_clean
-	make rebuild
-	make populate
+db_check_tags: up
+	docker exec -it $(DB) psql -d avito_db -U postgres -c "select id, feature_id, banner_tags.tag_id from banners join banner_tags on banner_tags.banner_id = banners.id order by banners.id asc;"
 
 populate: up
 	docker exec -it $(SERVER) python app/db/populate_db.py
