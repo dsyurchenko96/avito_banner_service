@@ -23,7 +23,7 @@ def get_banner(db: Session, feature_id: int, tag_id: int):
     )
     if response is None or not response.is_active:
         return None
-    return UserBannerGetResponse.from_orm(response)
+    return UserBannerGetResponse.model_validate(response)
 
 
 def get_banners(
@@ -43,10 +43,12 @@ def get_banners(
     results = query.offset(offset).limit(limit).all()
 
     all_banners = []
-    for banner in results:
-        banner_dict = banner.__dict__
-        banner_dict["tag_ids"] = [tag.id for tag in banner.associated_tags]
-        all_banners.append(AdminBannerGetResponse.from_orm(banner_dict))
+    for banner_table in results:
+        banner_dict = banner_table.__dict__
+        banner_dict["tag_ids"] = [tag.id for tag in banner_table.associated_tags]
+        banner_dict.pop("_sa_instance_state")
+        banner_dict.pop("associated_tags")
+        all_banners.append(AdminBannerGetResponse.model_validate(banner_dict))
     return all_banners
 
 
@@ -59,22 +61,22 @@ def create_banner(db: Session, banner: BannerPostRequest):
             or get_banner(db, banner.feature_id, tag_id) is not None
         ):
             return None
-    db_banner = Banner(**banner.dict(exclude={"tag_ids"}))
-    db_banner.associated_tags = [db.query(Tag).get(tag_id) for tag_id in banner.tag_ids]
+    db_banner = Banner(**banner.model_dump(exclude={"tag_ids"}))
+    db_banner.associated_tags = [db.get(Tag, tag_id) for tag_id in banner.tag_ids]
     db.add(db_banner)
     db.commit()
     db.refresh(db_banner)
-    return BannerPostResponse.from_orm(db_banner)
+    return BannerPostResponse.model_validate(db_banner)
 
 
 def update_banner(db: Session, id: int, banner: BannerPatchRequest):
     query = db.query(Banner).filter(Banner.id == id)
     if query.first() is None:
         return None
-    query.update(banner.dict(exclude_unset=True, exclude={"tag_ids"}))
+    query.update(banner.model_dump(exclude_unset=True, exclude={"tag_ids"}))
     if banner.tag_ids is not None:
         query.first().associated_tags = [
-            db.query(Tag).get(tag_id) for tag_id in banner.tag_ids
+            db.get(Tag, tag_id) for tag_id in banner.tag_ids
         ]
     db.add(query.first())
     db.commit()

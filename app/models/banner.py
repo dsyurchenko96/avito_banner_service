@@ -1,31 +1,33 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BannerBase(BaseModel):
-    content: dict = Field(
-        description="Содержимое баннера",
-        example='{"title": "some_title", "text": "some_text", "url": "some_url"}',
-    )
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
 
 
 class UserBannerGetResponse(BannerBase):
-    pass
+    content: dict = Field(
+        description="Содержимое баннера",
+        json_schema_extra={
+            "example": '{"title": "some_title", "text": "some_text", "url": "some_url"}'
+        },
+    )
 
 
-class BannerPostResponse(BaseModel):
+class BannerPostResponse(BannerBase):
     id: int = Field(description="Идентификатор созданного баннера")
-
-    class Config:
-        from_attributes = True
 
 
 class BannerPostRequest(BannerBase):
+    content: dict = Field(
+        description="Содержимое баннера",
+        json_schema_extra={
+            "example": '{"title": "some_title", "text": "some_text", "url": "some_url"}'
+        },
+    )
     tag_ids: List[int] = Field(description="Идентификаторы тэгов")
     feature_id: int = Field(description="Идентификатор фичи")
     is_active: bool = Field(description="Флаг активности баннера")
@@ -37,11 +39,13 @@ class AdminBannerGetResponse(BannerPostRequest):
     updated_at: datetime = Field(description="Дата обновления баннера")
 
 
-class BannerPatchRequest(BaseModel):
+class BannerPatchRequest(BannerBase):
     content: Optional[dict] = Field(
         default=None,
         description="Содержимое баннера",
-        example='{"title": "some_title", "text": "some_text", "url": "some_url"}',
+        json_schema_extra={
+            "example": '{"title": "some_title", "text": "some_text", "url": "some_url"}'
+        },
     )
     tag_ids: Optional[List[int]] = Field(
         default=None, description="Идентификаторы тэгов"

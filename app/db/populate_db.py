@@ -8,32 +8,12 @@ from app.db.database import get_db, recreate_db
 from app.models.tables import Admin, Banner, Feature, Tag, User
 
 
-def insert_manual_data(db: Session = next(get_db())):
-    feature = Feature(description="new feature")
-    tag = Tag()
-    tag2 = Tag()
-    user = User(tag_id=1, token=sha256(b"user").digest().hex())
-    admin = Admin(token=sha256(b"admin").digest().hex())
-    db.add_all([feature, tag, user, admin, tag2])
-    db.commit()
-    banner = Banner(
-        feature_id=1,
-        content={"title": "some_title", "text": "some_text", "url": "some_url"},
-        is_active=True,
-    )
-    banner.associated_tags = [tag, tag2]
-    db.add(banner)
-    db.commit()
-
-
 def generate_data(
     num_banners: int = 100,
     num_tags: int = 20,
     num_features: int = 5,
     db: Session = next(get_db()),
 ):
-    recreate_db()
-
     fake = Faker()
     features = generate_features(num_features, fake, db)
     tags = generate_tags(num_tags, fake, db)
@@ -99,4 +79,5 @@ def generate_admins(num_admins: int = 1, db: Session = next(get_db())):
 
 
 if __name__ == "__main__":
+    recreate_db()
     generate_data()

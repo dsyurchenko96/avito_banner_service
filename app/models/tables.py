@@ -43,6 +43,12 @@ class Banner(Base):
         cascade="all, delete",
     )
 
+    def __repr__(self):
+        return (
+            f"Banner(id={self.id}, feature_id={self.feature_id},"
+            f" content={self.content}, tags={self.associated_tags})"
+        )
+
 
 class Feature(Base):
     __tablename__ = 'features'

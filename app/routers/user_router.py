@@ -36,7 +36,7 @@ async def get_user_banner(
     Получение баннера для пользователя на основе тэга и фичи
     """
     if not is_user(token) and not is_admin(token):
-        raise HTTPException(status_code=403, detail="Пользователь не имеет доступа")
+        raise HTTPException(status_code=401, detail="Пользователь не авторизован")
     banner = get_banner(db, tag_id, feature_id)
     if banner is None:
         raise HTTPException(status_code=404, detail="Баннер не найден")

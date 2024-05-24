@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import NonNegativeInt
 from sqlalchemy.orm import Session
 
 from app.db.crud import create_banner, delete_banner, get_banners, update_banner
@@ -16,11 +17,9 @@ from app.utils.auth import is_admin, is_user
 router = APIRouter(
     prefix="/banner",
     responses={
-        "204": {"description": "Баннер успешно удален"},
         "400": {"description": "Некорректные данные"},
         "401": {"description": "Пользователь не авторизован"},
         "403": {"description": "Пользователь не имеет доступа"},
-        "404": {"description": "Баннер не найден"},
         "500": {"description": "Внутренняя ошибка сервера"},
     },
 )
@@ -29,10 +28,10 @@ router = APIRouter(
 @router.get("/", response_model=List[AdminBannerGetResponse], status_code=200)
 def get_banner(
     token: str,
-    feature_id: Optional[int] = None,
-    tag_id: Optional[int] = None,
-    limit: Optional[int] = None,
-    offset: Optional[int] = None,
+    feature_id: Optional[NonNegativeInt] = None,
+    tag_id: Optional[NonNegativeInt] = None,
+    limit: Optional[NonNegativeInt] = None,
+    offset: Optional[NonNegativeInt] = None,
     db: Session = Depends(get_db),
 ):
     """
@@ -43,7 +42,7 @@ def get_banner(
             raise HTTPException(status_code=403, detail="Пользователь не имеет доступа")
         else:
             raise HTTPException(status_code=401, detail="Пользователь не авторизован")
-    banners = get_banners(db, tag_id, feature_id, offset, limit)
+    banners = get_banners(db, feature_id, tag_id, offset, limit)
     if banners is None:
         raise HTTPException(status_code=404, detail="Баннер не найден")
     return banners
@@ -71,7 +70,10 @@ def post_banner(
 
 @router.patch("/{id}", status_code=200)
 def patch_banner_id(
-    id: int, token: str, body: BannerPatchRequest, db: Session = Depends(get_db)
+    id: NonNegativeInt,
+    token: str,
+    body: BannerPatchRequest,
+    db: Session = Depends(get_db),
 ):
     """
     Изменение баннера по идентификатору
@@ -87,8 +89,12 @@ def patch_banner_id(
     return response
 
 
-@router.delete("/{id}", status_code=204)
-def delete_banner_id(id: int, token: str, db: Session = Depends(get_db)):
+@router.delete(
+    "/{id}",
+    status_code=204,
+    responses={"204": {"description": "Баннер успешно удален"}},
+)
+def delete_banner_id(id: NonNegativeInt, token: str, db: Session = Depends(get_db)):
     """
     Удаление баннера по идентификатору
     """

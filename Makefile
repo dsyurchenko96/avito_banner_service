@@ -23,6 +23,9 @@ populate: up
 logs: up
 	docker-compose logs
 
+test: up
+	docker exec -it $(SERVER) pytest -v -s app/test/
+
 clean: down
 	docker-compose rm $(CONTAINERS)
 	docker image rm $(IMAGES)
@@ -31,4 +34,4 @@ rebuild:
 	make clean
 	make up
 
-.PHONY: run create_db up down clean rebuild
+.PHONY: run up down view_db populate logs test clean rebuild
